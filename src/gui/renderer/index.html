@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark" />
+    <title>Webtoapp Studio</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script defer src="renderer.js"></script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Project navigation">
+        <a class="brand" href="#top" aria-label="Webtoapp Studio home">
+          <span class="brand-mark"><i></i><i></i><i></i></span>
+          <span>webtoapp<small>STUDIO</small></span>
+        </a>
+        <div class="project-chip">
+          <span class="dot"></span>
+          <div><strong id="project-name">Untitled app</strong><span id="project-path">Not saved yet</span></div>
+        </div>
+        <nav>
+          <a class="nav-item active" href="#basics"><span>01</span> App details</a>
+          <a class="nav-item" href="#window"><span>02</span> Window</a>
+          <a class="nav-item" href="#security"><span>03</span> Security</a>
+          <a class="nav-item" href="#export"><span>04</span> Export</a>
+        </nav>
+        <div class="sidebar-bottom">
+          <div class="security-mini"><span class="shield">✓</span><div><strong>Secure by default</strong><small>Sandboxed &amp; isolated</small></div></div>
+          <a class="docs-link" href="https://github.com/OmniNodeCo/Webtoapp" data-external>View project on GitHub <span>↗</span></a>
+        </div>
+      </aside>
+
+      <main id="top">
+        <header class="topbar">
+          <div class="crumb"><span>Projects</span><b>/</b><strong id="crumb-name">Untitled app</strong></div>
+          <div class="top-actions">
+            <button class="button button-quiet" id="open-button" type="button">Open config</button>
+            <button class="button button-quiet" id="save-button" type="button">Save config</button>
+            <button class="button button-primary" id="build-button" type="button"><span>✦</span> Export app</button>
+          </div>
+        </header>
+
+        <section class="hero">
+          <div>
+            <p class="eyebrow">DESKTOP APP BUILDER</p>
+            <h1>Make your website feel<br />right at home.</h1>
+            <p class="subhead">Configure a focused, secure desktop wrapper. Export an Electron project you can run, inspect, and package on your own terms.</p>
+          </div>
+          <div class="build-readiness" id="readiness" aria-live="polite">
+            <div class="readiness-ring"><span>100</span><small>%</small></div>
+            <div><strong>Ready to export</strong><small>Complete the app details below</small></div>
+          </div>
+        </section>
+
+        <div class="content-grid">
+          <form id="project-form" novalidate>
+            <section class="panel" id="basics">
+              <div class="panel-heading"><div><p class="eyebrow">01 / FOUNDATION</p><h2>App details</h2><p>Give your app a clear identity and choose where it starts.</p></div></div>
+              <div class="fields two-col">
+                <label>App name<input id="appName" name="appName" maxlength="80" placeholder="Acme Portal" autocomplete="off" /><span class="hint">Shown in the dock, taskbar, and installer.</span></label>
+                <label>App ID<input id="appId" name="appId" placeholder="com.acme.portal" autocomplete="off" /><span class="hint">A unique reverse-domain identifier.</span></label>
+              </div>
+              <div class="fields site-row">
+                <label>Website URL<input id="website" name="website" type="url" placeholder="https://portal.example.com" autocomplete="url" /><span class="hint">HTTPS is required, except for localhost development.</span></label>
+                <label class="color-label">Brand color<div class="color-input"><input id="themeColorPicker" type="color" value="#6d5dfb" aria-label="Brand color picker" /><input id="themeColor" name="themeColor" value="#6D5DFB" maxlength="7" aria-label="Brand color hex value" /></div></label>
+              </div>
+            </section>
+
+            <section class="panel" id="window">
+              <div class="panel-heading"><div><p class="eyebrow">02 / EXPERIENCE</p><h2>Window &amp; appearance</h2><p>Set a comfortable default canvas without locking users in.</p></div></div>
+              <div class="window-grid">
+                <label>Initial width<input id="width" name="width" type="number" min="320" max="7680" /></label>
+                <label>Initial height<input id="height" name="height" type="number" min="320" max="7680" /></label>
+                <label>Minimum width<input id="minWidth" name="minWidth" type="number" min="320" max="7680" /></label>
+                <label>Minimum height<input id="minHeight" name="minHeight" type="number" min="320" max="7680" /></label>
+              </div>
+              <label class="toggle-row"><span><strong>Show native menu bar</strong><small>Keep the File, Edit, and View menus visible.</small></span><input id="showMenuBar" type="checkbox" /><i aria-hidden="true"></i></label>
+            </section>
+
+            <section class="panel" id="security">
+              <div class="panel-heading"><div><p class="eyebrow">03 / TRUST BOUNDARY</p><h2>Navigation &amp; security</h2><p>Your main website is always included. Add only hosts that belong inside the app.</p></div><span class="secure-badge">✓ Secure defaults</span></div>
+              <label>Allowed navigation hosts<input id="allowedHosts" name="allowedHosts" placeholder="auth.example.com, help.example.com" autocomplete="off" /><span class="hint">Comma-separated hostnames. Other links open in the system browser.</span></label>
+              <label class="toggle-row"><span><strong>Open external links in browser</strong><small>Let untrusted destinations leave the app window.</small></span><input id="openExternalLinks" type="checkbox" checked /><i aria-hidden="true"></i></label>
+              <div class="security-grid">
+                <div><span class="check">✓</span><strong>Context isolation</strong><small>Website code cannot reach Electron APIs.</small></div>
+                <div><span class="check">✓</span><strong>Sandboxed renderer</strong><small>Browser content gets no direct system access.</small></div>
+                <div><span class="check">✓</span><strong>Blocked popups</strong><small>New windows are denied by default.</small></div>
+              </div>
+            </section>
+
+            <section class="panel export-panel" id="export">
+              <div><p class="eyebrow">04 / HANDOFF</p><h2>Export your project</h2><p>Webtoapp writes a standalone Electron project with secure defaults, ready for <code>npm install</code> and packaging.</p></div>
+              <button class="button button-primary button-large" id="export-button" type="button">Export app project <span>→</span></button>
+            </section>
+          </form>
+
+          <aside class="preview-column" aria-label="App preview">
+            <div class="preview-sticky">
+              <div class="preview-top"><span class="eyebrow">LIVE PREVIEW</span><span class="preview-live"><i></i> Synced</span></div>
+              <div class="device-shadow">
+                <div class="device-window">
+                  <div class="window-controls"><i></i><i></i><i></i><span></span></div>
+                  <div class="url-bar"><span>⌕</span><b id="preview-host">example.com</b><em>⌄</em></div>
+                  <div class="preview-page">
+                    <div class="preview-ribbon" id="preview-color"></div>
+                    <p class="preview-kicker">WELCOME BACK</p>
+                    <h3 id="preview-title">My Website</h3>
+                    <p>Everything your team needs, in one focused place.</p>
+                    <div class="preview-lines"><i></i><i></i><i></i></div>
+                    <button id="preview-button" type="button">Open dashboard <span>→</span></button>
+                  </div>
+                </div>
+              </div>
+              <div class="preview-caption"><span class="status-dot"></span><span><strong id="preview-size">1280 × 820</strong> desktop window</span></div>
+              <div class="validation-card" id="validation-card" aria-live="polite"><strong><span>✓</span> Looking good</strong><p>Your configuration is ready to become an app.</p></div>
+            </div>
+          </aside>
+        </div>
+        <footer>Webtoapp Studio <span>•</span> <span id="version">Loading version…</span></footer>
+      </main>
+    </div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </body>
+</html>

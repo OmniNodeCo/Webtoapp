@@ -1,0 +1,71 @@
+{
+  "name": "webtoapp",
+  "version": "0.1.0",
+  "description": "Turn any trusted website into a polished, secure desktop app.",
+  "license": "MIT",
+  "type": "module",
+  "main": "dist/gui/main.js",
+  "bin": {
+    "webtoapp": "dist/cli/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json && node scripts/copy-assets.mjs",
+    "clean": "node -e \"import('node:fs').then(fs => fs.rmSync('dist', { recursive: true, force: true }))\"",
+    "dev": "npm run build && electron .",
+    "gui": "npm run dev",
+    "cli": "npm run build && node dist/cli/index.js",
+    "test": "npm run build && node --test dist/test/**/*.test.js",
+    "test:watch": "npm run build && node --test --watch dist/test/**/*.test.js",
+    "typecheck": "tsc --noEmit",
+    "package": "npm run build && electron-builder --publish never",
+    "release:dry-run": "npm run package"
+  },
+  "keywords": [
+    "electron",
+    "website",
+    "desktop-app",
+    "app-builder",
+    "cli"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "electron": "^33.2.1",
+    "electron-builder": "^25.1.8",
+    "typescript": "^5.7.2"
+  },
+  "build": {
+    "appId": "com.webtoapp.studio",
+    "productName": "Webtoapp Studio",
+    "files": [
+      "dist/**/*",
+      "package.json",
+      "README.md"
+    ],
+    "directories": {
+      "output": "release"
+    },
+    "linux": {
+      "target": ["AppImage", "deb"],
+      "category": "Development"
+    },
+    "mac": {
+      "target": ["dmg", "zip"],
+      "category": "public.app-category.developer-tools"
+    },
+    "win": {
+      "target": ["nsis", "zip"]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  }
+}
