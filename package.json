@@ -41,6 +41,8 @@
     "test:watch": "npm run build && node --test --watch dist/test/**/*.test.js",
     "typecheck": "tsc --noEmit",
     "package": "npm run build && electron-builder --publish never",
+    "portable": "npm run build && electron-builder --dir --publish never",
+    "portable:win": "npm run build && electron-builder --win portable --publish never",
     "release:dry-run": "npm run package",
     "pack:check": "npm pack --dry-run",
     "prepack": "npm run build",
@@ -73,20 +75,39 @@
     "directories": {
       "output": "release"
     },
+    "publish": [{
+      "provider": "github",
+      "owner": "OmniNodeCo",
+      "repo": "Webtoapp",
+      "releaseType": "release"
+    }],
     "linux": {
-      "target": ["AppImage", "deb"],
+      "target": [
+        "AppImage",
+        "deb"
+      ],
       "category": "Development"
     },
     "mac": {
-      "target": ["dmg", "zip"],
+      "target": [
+        "dmg",
+        "zip"
+      ],
       "category": "public.app-category.developer-tools"
     },
     "win": {
-      "target": ["nsis", "zip"]
+      "target": [
+        "portable",
+        "nsis",
+        "zip"
+      ]
     },
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true
     }
+  },
+  "dependencies": {
+    "electron-updater": "^6.8.9"
   }
 }

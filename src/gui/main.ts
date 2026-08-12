@@ -4,9 +4,15 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { assertValidConfig, configFrom, loadConfig, validateConfig, writeGeneratedProject } from "../core/index.js";
 import type { AppConfig } from "../core/index.js";
+import { ReleaseUpdater, type UpdateStatus } from "./updater.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 let mainWindow: BrowserWindow | undefined;
+let releaseUpdater: ReleaseUpdater | undefined;
+
+function sendUpdateStatus(status: UpdateStatus): void {
+  mainWindow?.webContents.send("studio:updateStatus", status);
+}
 
 function createWindow(): void {
   mainWindow = new BrowserWindow({
@@ -32,6 +38,8 @@ function serializableError(error: unknown): { message: string } {
 
 function registerIpc(): void {
   ipcMain.handle("studio:version", () => app.getVersion());
+  ipcMain.handle("studio:checkForUpdates", () => releaseUpdater?.check());
+  ipcMain.handle("studio:installUpdate", () => releaseUpdater?.installOrOpenRelease());
   ipcMain.handle("studio:validate", (_event, raw: Partial<AppConfig>) => validateConfig(raw));
   ipcMain.handle("studio:openExternal", (_event, url: unknown) => {
     if (typeof url === "string" && /^https?:\/\//i.test(url)) return shell.openExternal(url);
@@ -90,6 +98,8 @@ app.whenReady().then(() => {
   app.setAppUserModelId("com.webtoapp.studio");
   registerIpc();
   createWindow();
+  releaseUpdater = new ReleaseUpdater(sendUpdateStatus);
+  releaseUpdater.start();
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });

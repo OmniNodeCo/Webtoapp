@@ -43,6 +43,35 @@ webtoapp --version
 
 See [CLI.md](CLI.md) for command examples and [PUBLISHING.md](PUBLISHING.md) for the maintainer release checklist.
 
+## Portable desktop builds
+
+Build an app that runs without an installer:
+
+```bash
+# Creates an unpacked runnable folder for the current OS in release/
+npm run portable
+
+# On Windows, creates one portable .exe in release/
+npm run portable:win
+```
+
+Source-checkout setup scripts are also included:
+
+```bash
+./install.sh             # install dependencies and compile the CLI
+./install.sh --global    # also install the webtoapp command globally
+./install.sh --portable  # create an unpacked portable desktop app
+
+install.bat --global     # Windows global CLI setup
+install.bat --portable   # Windows portable .exe
+```
+
+## Release updates
+
+Packaged releases check the GitHub Releases feed automatically after launch. Installable Windows builds use the NSIS update channel to download updates in the background and apply them when the app restarts; macOS and Linux release formats use their supported update metadata. The **Check updates** button is also available in Studio.
+
+The portable Windows `.exe` intentionally has no installer and cannot overwrite its own running file safely. It shows **Get latest version** instead, which opens the latest GitHub Release so you can replace the portable executable yourself. Release builds include both the portable `.exe` and the NSIS update-channel artifact.
+
 ## CLI
 
 ```text

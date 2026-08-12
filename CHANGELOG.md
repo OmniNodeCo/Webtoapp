@@ -11,7 +11,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - A standalone npm-ready CLI distribution with `npx webtoapp@latest` and global-install support.
 - CLI version reporting with `webtoapp --version`.
 - CLI installation and npm publishing guides.
-- A manual Windows executable build workflow that produces an NSIS `.exe` installer when explicitly started from GitHub Actions.
+- Source-checkout installation scripts for macOS/Linux (`install.sh`) and Windows (`install.bat`).
+- No-installer portable builds: an unpacked native app for the current platform and a portable Windows `.exe` target.
+- GitHub Releases update checks for packaged Studio builds, with background download/restart installation on supported installable targets and a latest-release handoff for the portable executable.
+- A manual Windows portable executable workflow; automated tests remain in `test.yml`.
 
 ## [0.1.0] - 2026-08-11
 

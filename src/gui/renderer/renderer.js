@@ -141,6 +141,42 @@
     if (result.error) { toast(result.error.message, true); return; }
     if (!result.canceled) toast(`App project exported to ${result.result.outputDirectory}`);
   }
+  let updateState = "idle";
+  function applyUpdateStatus(status) {
+    if (!status || typeof status.message !== "string") return;
+    updateState = status.state || "idle";
+    const button = $("#updates-button");
+    if (status.state === "downloaded") {
+      button.textContent = "Restart to update";
+      button.classList.remove("button-quiet");
+      button.classList.add("button-primary");
+      toast(status.message);
+    } else if (status.state === "portable") {
+      button.textContent = "Get latest version";
+      toast(status.message);
+    } else if (status.state === "downloading") {
+      button.textContent = `Updating ${status.percent || 0}%`;
+      button.disabled = true;
+    } else if (status.state === "checking") {
+      button.textContent = "Checking…";
+      button.disabled = true;
+    } else {
+      button.disabled = false;
+      button.textContent = "Check updates";
+      button.classList.remove("button-primary");
+      button.classList.add("button-quiet");
+      if (status.state === "error") toast(status.message, true);
+      if (status.state === "not-available") toast(status.message);
+    }
+  }
+  async function handleUpdateAction() {
+    if (updateState === "downloaded" || updateState === "portable") {
+      await studio.installUpdate();
+      return;
+    }
+    try { applyUpdateStatus(await studio.checkForUpdates()); }
+    catch { toast("Could not check for updates.", true); }
+  }
   document.addEventListener("DOMContentLoaded", async () => {
     applyConfig(defaults, false);
     $("#project-form").addEventListener("input", (event) => {
@@ -153,6 +189,8 @@
     input("themeColorPicker").addEventListener("input", (event) => { input("themeColor").value = event.target.value.toUpperCase(); refresh(); });
     $("#open-button").addEventListener("click", open);
     $("#save-button").addEventListener("click", save);
+    $("#updates-button").addEventListener("click", handleUpdateAction);
+    studio.onUpdateStatus(applyUpdateStatus);
     $("#build-button").addEventListener("click", exportProject);
     $("#export-button").addEventListener("click", exportProject);
     document.querySelectorAll("[data-external]").forEach((link) => link.addEventListener("click", (event) => { event.preventDefault(); studio.openExternal(link.href); }));

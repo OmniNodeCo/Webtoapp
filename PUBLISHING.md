@@ -51,4 +51,15 @@ npx webtoapp@latest --help
 
 For automated npm publishing, configure [npm trusted publishing](https://docs.npmjs.com/trusted-publishers) for this GitHub repository and add a release workflow that runs `npm publish --provenance`. Trusted publishing uses GitHub’s OIDC identity and avoids storing an npm token as a GitHub Actions secret.
 
-The existing `release.yml` is for desktop installer artifacts. Keep npm publication as a separate, reviewed release step unless you explicitly want tags to publish both installers and the CLI package.
+The existing `release.yml` is for desktop artifacts. It publishes the installer update metadata that packaged Studio releases use to find updates. Keep npm publication as a separate, reviewed release step unless you explicitly want tags to publish both desktop artifacts and the CLI package.
+
+## Desktop release and auto-update checklist
+
+The in-app updater follows GitHub Releases and compares the app’s `package.json` version with the release tag. Before creating a desktop release:
+
+1. Change `package.json` to a new, valid semantic version. Do not reuse `0.1.0` after it has been published.
+2. Add the release notes to `CHANGELOG.md`.
+3. Create and push a matching `v<version>` tag, for example `v0.1.1`.
+4. Let `release.yml` complete. Its release assets include the update metadata required by the installed app channel.
+
+Portable Windows builds are intentionally no-installer artifacts. They provide a latest-release download handoff rather than replacing their own running `.exe`.
