@@ -31,6 +31,12 @@ test("CLI initializes, inspects, and builds a project", async (t) => {
   await access(path.join(output, "main.cjs"));
 });
 
+test("CLI reports the published package version", async () => {
+  const capture = recorder();
+  assert.equal(await runCli(["--version"], capture.io), 0);
+  assert.match(capture.logs[0] ?? "", /^0\.1\.0$/);
+});
+
 test("CLI returns a useful code for unknown commands", async () => {
   const capture = recorder();
   assert.equal(await runCli(["wat"], capture.io), 2);

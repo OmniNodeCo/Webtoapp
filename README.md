@@ -30,6 +30,19 @@ npm start
 npm run package
 ```
 
+## Install the CLI
+
+After publishing, use the CLI without cloning this repository:
+
+```bash
+npx webtoapp@latest --help
+# or
+npm install --global webtoapp
+webtoapp --version
+```
+
+See [CLI.md](CLI.md) for command examples and [PUBLISHING.md](PUBLISHING.md) for the maintainer release checklist.
+
 ## CLI
 
 ```text

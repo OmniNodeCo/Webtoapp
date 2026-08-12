@@ -8,11 +8,29 @@
   "bin": {
     "webtoapp": "dist/cli/index.js"
   },
+  "exports": {
+    ".": "./dist/core/index.js",
+    "./cli": "./dist/cli/index.js"
+  },
   "files": [
     "dist",
     "README.md",
+    "CLI.md",
+    "PUBLISHING.md",
+    "CHANGELOG.md",
     "LICENSE"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OmniNodeCo/Webtoapp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/OmniNodeCo/Webtoapp/issues"
+  },
+  "homepage": "https://github.com/OmniNodeCo/Webtoapp#readme",
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.json && node scripts/copy-assets.mjs",
     "clean": "node -e \"import('node:fs').then(fs => fs.rmSync('dist', { recursive: true, force: true }))\"",
@@ -23,7 +41,10 @@
     "test:watch": "npm run build && node --test --watch dist/test/**/*.test.js",
     "typecheck": "tsc --noEmit",
     "package": "npm run build && electron-builder --publish never",
-    "release:dry-run": "npm run package"
+    "release:dry-run": "npm run package",
+    "pack:check": "npm pack --dry-run",
+    "prepack": "npm run build",
+    "prepublishOnly": "npm run typecheck && npm test"
   },
   "keywords": [
     "electron",

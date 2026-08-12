@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { mkdir, writeFile } from "node:fs/promises";
+import { readFileSync } from "node:fs";
 import path from "node:path";
 import process from "node:process";
 import { assertValidConfig, configFrom, deriveAppId, loadConfig, navigationHosts, validateConfig, writeGeneratedProject } from "../core/index.js";
@@ -15,6 +16,8 @@ const stdoutIO: CliIO = {
   error: (message) => console.error(message),
 };
 
+const PACKAGE_VERSION = JSON.parse(readFileSync(new URL("../../package.json", import.meta.url), "utf8")) as { version: string };
+
 const HELP = `
 Webtoapp Studio — turn a trusted website into a desktop app
 
@@ -24,6 +27,7 @@ Usage:
   webtoapp inspect [config]
   webtoapp build [config] [--output directory] [--force]
   webtoapp doctor [config]
+  webtoapp --version
 
 Examples:
   webtoapp init ./acme --name "Acme Portal" --url https://portal.acme.test
@@ -85,6 +89,11 @@ export async function runCli(argv: string[], io: CliIO = stdoutIO): Promise<numb
       case "--help":
       case "-h":
         io.log(HELP);
+        return 0;
+      case "--version":
+      case "-v":
+      case "version":
+        io.log(PACKAGE_VERSION.version);
         return 0;
       case "init":
         return await init(positionals[0], options, io);

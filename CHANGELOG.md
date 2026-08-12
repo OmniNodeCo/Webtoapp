@@ -8,6 +8,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+- A standalone npm-ready CLI distribution with `npx webtoapp@latest` and global-install support.
+- CLI version reporting with `webtoapp --version`.
+- CLI installation and npm publishing guides.
 - A manual Windows executable build workflow that produces an NSIS `.exe` installer when explicitly started from GitHub Actions.
 
 ## [0.1.0] - 2026-08-11
