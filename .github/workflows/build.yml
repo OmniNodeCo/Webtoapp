@@ -1,19 +1,21 @@
-name: Build
+name: Build Windows installer
 
+# Deliberately manual: test.yml is the only workflow that runs automatically.
 on:
-  push:
-    branches: [main, "arena/**"]
-  pull_request:
-    branches: [main]
   workflow_dispatch:
+    inputs:
+      version_note:
+        description: "Optional note displayed with this build"
+        required: false
+        type: string
 
 permissions:
   contents: read
 
 jobs:
-  build:
-    name: Compile Webtoapp Studio
-    runs-on: ubuntu-latest
+  windows-installer:
+    name: Create Windows .exe installer
+    runs-on: windows-latest
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -26,12 +28,14 @@ jobs:
         run: npm ci
       - name: Typecheck
         run: npm run typecheck
-      - name: Compile desktop application
-        run: npm run build
-      - name: Upload compiled build
+      - name: Run test suite
+        run: npm test
+      - name: Build NSIS executable
+        run: npx electron-builder --win nsis --publish never
+      - name: Upload Windows installer
         uses: actions/upload-artifact@v4
         with:
-          name: webtoapp-studio-dist
-          path: dist
+          name: Webtoapp-Studio-Windows-${{ github.run_number }}
+          path: release/*.exe
           if-no-files-found: error
-          retention-days: 14
+          retention-days: 30
