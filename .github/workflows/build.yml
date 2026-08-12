@@ -1,0 +1,37 @@
+name: Build
+
+on:
+  push:
+    branches: [main, "arena/**"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Compile Webtoapp Studio
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Compile desktop application
+        run: npm run build
+      - name: Upload compiled build
+        uses: actions/upload-artifact@v4
+        with:
+          name: webtoapp-studio-dist
+          path: dist
+          if-no-files-found: error
+          retention-days: 14
