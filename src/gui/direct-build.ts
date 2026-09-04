@@ -49,7 +49,17 @@ export async function buildDirectPortableApp(
   let logger: ((message: string) => Promise<void>) | undefined;
   try {
     onProgress?.({ phase: "copying-runtime", message: "Copying the portable app runtime…" });
-    await cp(sourceRoot, destination, { recursive: true, errorOnExist: true, force: false });
+    // Electron's patched fs treats every .asar path as an archive. Copying the
+    // source archive through fs.cp can therefore inspect a partially-written
+    // destination archive and fail with “Invalid package app.asar”. Omit the
+    // old payload; the validated replacement is written below.
+    const sourceResources = resourceDirectory(sourceRoot);
+    await cp(sourceRoot, destination, {
+      recursive: true,
+      errorOnExist: true,
+      force: false,
+      filter: (source) => !isOldAppPayload(source, sourceResources),
+    });
     logger = createLogger(logPath);
     await logger("Webtoapp direct build started");
     await logger(`Studio version: ${app.getVersion()}`);
@@ -120,6 +130,13 @@ function resourceDirectory(appRoot: string): string {
   return process.platform === "darwin"
     ? path.join(appRoot, "Contents", "Resources")
     : path.join(appRoot, "resources");
+}
+
+function isOldAppPayload(candidate: string, sourceResources: string): boolean {
+  const relative = path.relative(sourceResources, candidate);
+  return relative === "app.asar"
+    || relative === "app.asar.unpacked"
+    || relative.startsWith(`app.asar.unpacked${path.sep}`);
 }
 
 async function ensureMissing(destination: string): Promise<void> {
