@@ -1,4 +1,4 @@
-name: Release desktop apps
+name: Release Webtoapp CLI
 
 on:
   push:
@@ -9,63 +9,37 @@ permissions:
   contents: write
 
 jobs:
-  verify:
-    name: Verify release
+  release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.26.2
+          run_install: false
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
-      - run: npm ci
-      - run: npm run typecheck
-      - run: npm test
-
-  package:
-    name: Package ${{ matrix.name }}
-    needs: verify
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - name: Linux
-            os: ubuntu-latest
-          - name: macOS
-            os: macos-latest
-          - name: Windows
-            os: windows-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-      - run: npm ci
-      - run: npm run package
-      - name: Upload ${{ matrix.name }} artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: Webtoapp-Studio-${{ matrix.name }}
-          path: release/*
-          if-no-files-found: error
-          retention-days: 14
-
-  publish:
-    name: Create GitHub release
-    needs: package
-    runs-on: ubuntu-latest
-    # Manual runs validate and package artifacts but never create an untagged release.
-    if: startsWith(github.ref, 'refs/tags/v')
-    steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: artifacts
-          merge-multiple: true
-      - name: Publish release assets
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Test and build CLI
+        run: |
+          pnpm run cli:build
+          pnpm run test:unit
+      - name: Create npm package archive
+        run: pnpm pack
+      - name: Create GitHub release
+        if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
-          files: artifacts/**/*
+          files: webtoapp-*.tgz
+      - name: Upload package archive
+        if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: webtoapp-cli-package
+          path: webtoapp-*.tgz
+          if-no-files-found: error
+          retention-days: 14

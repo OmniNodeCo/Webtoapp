@@ -1,0 +1,79 @@
+import path from 'path';
+import BaseBuilder from './BaseBuilder';
+import { PakeAppOptions } from '@/types';
+import tauriConfig from '@/helpers/tauriConfig';
+import { generateIdentifierSafeName } from '@/utils/name';
+
+export default class WinBuilder extends BaseBuilder {
+  private buildFormat: string = 'msi';
+  private buildArch: string;
+
+  constructor(options: PakeAppOptions) {
+    super(options);
+    const validArchs = ['x64', 'arm64', 'auto'];
+    this.buildArch = validArchs.includes(options.targets || '')
+      ? this.resolveTargetArch(options.targets)
+      : this.resolveTargetArch('auto');
+    this.options.targets = this.buildFormat;
+  }
+
+  getReportArch(): string {
+    return this.buildArch;
+  }
+
+  getFileName(): string {
+    const { name } = this.options;
+    const language = tauriConfig.bundle.windows.wix.language[0];
+    const targetArch = this.getArchDisplayName(this.buildArch);
+    return `${name}_${tauriConfig.version}_${targetArch}_${language}`;
+  }
+
+  protected getBuildCommand(packageManager: string = 'pnpm'): string {
+    const configPath = path.join('src-tauri', '.webtoapp', 'tauri.conf.json');
+    const buildTarget = this.getTauriTarget(this.buildArch, 'win32');
+
+    if (!buildTarget) {
+      throw new Error(
+        `Unsupported architecture: ${this.buildArch} for Windows`,
+      );
+    }
+
+    let command = this.buildBaseCommand(packageManager, configPath, buildTarget);
+    // A raw Tauri executable is portable and does not require an MSI installer.
+    if (this.options.bundle === false) command += ' --no-bundle';
+    return command;
+  }
+
+  protected getBasePath(): string {
+    const basePath = this.options.debug ? 'debug' : 'release';
+    const target = this.getTauriTarget(this.buildArch, 'win32');
+    if (!target) {
+      throw new Error(
+        `Unsupported architecture: ${this.buildArch} for Windows`,
+      );
+    }
+    return path.join(this.getCargoTargetDir(), target, basePath, 'bundle');
+  }
+
+  protected hasArchSpecificTarget(): boolean {
+    return true;
+  }
+
+  protected getArchSpecificPath(): string {
+    const target = this.getTauriTarget(this.buildArch, 'win32');
+    if (!target) {
+      throw new Error(
+        `Unsupported architecture: ${this.buildArch} for Windows`,
+      );
+    }
+    return path.join(this.getCargoTargetDir(), target);
+  }
+
+  protected getRawBinaryPath(appName: string): string {
+    return `${appName}.exe`;
+  }
+
+  protected getBinaryName(appName: string): string {
+    return `webtoapp-${generateIdentifierSafeName(appName)}.exe`;
+  }
+}

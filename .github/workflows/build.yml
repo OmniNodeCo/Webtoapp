@@ -1,54 +1,154 @@
-name: Build portable apps
+name: Build website app
 
-# Deliberately manual: test.yml is the only workflow that runs on branch pushes and pull requests.
+# Manual cloud builder: end users enter a website and download their app.
+# No npm, Node.js, Rust, or local compiler is required on their computer.
 on:
   workflow_dispatch:
     inputs:
-      version_note:
-        description: "Optional note displayed with this build"
+      website:
+        description: "HTTPS website to package"
+        required: true
+        default: "https://example.com"
+        type: string
+      app_name:
+        description: "Application name"
+        required: true
+        default: "My Website App"
+        type: string
+      width:
+        description: "Initial window width"
+        required: true
+        default: "1280"
+        type: string
+      height:
+        description: "Initial window height"
+        required: true
+        default: "820"
+        type: string
+      safe_domains:
+        description: "Optional comma-separated SSO/internal domains"
         required: false
         type: string
+      new_window:
+        description: "Allow website links to open additional app windows"
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
 
 jobs:
-  portable:
-    name: Portable ${{ matrix.name }} build
+  build:
+    name: ${{ matrix.name }} · ${{ inputs.app_name }}
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 40
     strategy:
       fail-fast: false
       matrix:
         include:
           - name: Windows
+            id: windows
             os: windows-latest
-            command: npm run portable:win
+            rust: stable-x86_64-msvc
           - name: macOS
+            id: macos
             os: macos-latest
-            command: npm run portable
+            rust: stable
           - name: Linux
+            id: linux
             os: ubuntu-latest
-            command: npm run portable
+            rust: stable
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
-      - name: Use Node.js 22
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.26.2
+          run_install: false
+      - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
-      - name: Install dependencies
-        run: npm ci
-      - name: Typecheck
-        run: npm run typecheck
-      - name: Run test suite
-        run: npm test
-      - name: Build portable app
-        run: ${{ matrix.command }}
-      - name: Upload ${{ matrix.name }} portable app
+          cache: pnpm
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: ${{ matrix.rust }}
+      - name: Install Linux webview dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential curl file libayatana-appindicator3-dev libdbus-1-dev \
+            libglib2.0-dev libgtk-3-dev libjavascriptcoregtk-4.1-dev \
+            libssl-dev libsoup-3.0-dev libwebkit2gtk-4.1-dev libxdo-dev \
+            pkg-config librsvg2-dev
+      - name: Install build dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Compile Webtoapp CLI
+        run: pnpm run cli:build
+      - name: Build Windows portable executable
+        if: runner.os == 'Windows'
+        shell: pwsh
+        env:
+          APP_URL: ${{ inputs.website }}
+          APP_NAME: ${{ inputs.app_name }}
+          APP_WIDTH: ${{ inputs.width }}
+          APP_HEIGHT: ${{ inputs.height }}
+          APP_SAFE_DOMAINS: ${{ inputs.safe_domains }}
+          APP_NEW_WINDOW: ${{ inputs.new_window }}
+        run: |
+          $args = @($env:APP_URL, "--name", $env:APP_NAME, "--width", $env:APP_WIDTH, "--height", $env:APP_HEIGHT, "--targets", "x64", "--no-bundle", "--json")
+          if ($env:APP_SAFE_DOMAINS) { $args += "--safe-domain", $env:APP_SAFE_DOMAINS }
+          if ($env:APP_NEW_WINDOW -eq "true") { $args += "--new-window" }
+          node dist/cli.js @args
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          New-Item -ItemType Directory -Force -Path output | Out-Null
+          $artifact = Get-ChildItem -Path . -File -Filter "*.exe" | Select-Object -First 1
+          if (-not $artifact) { throw "Webtoapp did not create a Windows .exe." }
+          Copy-Item $artifact.FullName output/
+      - name: Build macOS app bundle
+        if: runner.os == 'macOS'
+        shell: bash
+        env:
+          APP_URL: ${{ inputs.website }}
+          APP_NAME: ${{ inputs.app_name }}
+          APP_WIDTH: ${{ inputs.width }}
+          APP_HEIGHT: ${{ inputs.height }}
+          APP_SAFE_DOMAINS: ${{ inputs.safe_domains }}
+          APP_NEW_WINDOW: ${{ inputs.new_window }}
+        run: |
+          set -euo pipefail
+          args=("$APP_URL" --name "$APP_NAME" --width "$APP_WIDTH" --height "$APP_HEIGHT" --targets app --json)
+          if [ -n "$APP_SAFE_DOMAINS" ]; then args+=(--safe-domain "$APP_SAFE_DOMAINS"); fi
+          if [ "$APP_NEW_WINDOW" = "true" ]; then args+=(--new-window); fi
+          node dist/cli.js "${args[@]}"
+          mkdir -p output
+          artifact="$(find . -maxdepth 1 -type d -name '*.app' -print -quit)"
+          test -n "$artifact"
+          cp -R "$artifact" output/
+      - name: Build Linux AppImage
+        if: runner.os == 'Linux'
+        shell: bash
+        env:
+          APP_URL: ${{ inputs.website }}
+          APP_NAME: ${{ inputs.app_name }}
+          APP_WIDTH: ${{ inputs.width }}
+          APP_HEIGHT: ${{ inputs.height }}
+          APP_SAFE_DOMAINS: ${{ inputs.safe_domains }}
+          APP_NEW_WINDOW: ${{ inputs.new_window }}
+        run: |
+          set -euo pipefail
+          args=("$APP_URL" --name "$APP_NAME" --width "$APP_WIDTH" --height "$APP_HEIGHT" --targets appimage --json)
+          if [ -n "$APP_SAFE_DOMAINS" ]; then args+=(--safe-domain "$APP_SAFE_DOMAINS"); fi
+          if [ "$APP_NEW_WINDOW" = "true" ]; then args+=(--new-window); fi
+          node dist/cli.js "${args[@]}"
+          mkdir -p output
+          artifact="$(find . -maxdepth 1 -type f -name '*.AppImage' -print -quit)"
+          test -n "$artifact"
+          cp "$artifact" output/
+      - name: Upload ${{ matrix.name }} app
         uses: actions/upload-artifact@v4
         with:
-          name: Webtoapp-Studio-Portable-${{ matrix.name }}-${{ github.run_number }}
-          path: release/**
+          name: Webtoapp-${{ inputs.app_name }}-${{ matrix.name }}-${{ github.run_number }}
+          path: output
           if-no-files-found: error
-          retention-days: 30
+          retention-days: 14

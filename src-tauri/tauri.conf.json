@@ -1,0 +1,20 @@
+{
+  "productName": "Webtoapp",
+  "identifier": "com.omninodeco.webtoapp",
+  "version": "0.1.0",
+  "app": {
+    "withGlobalTauri": true,
+    "trayIcon": {
+      "iconPath": "png/icon_512.png",
+      "iconAsTemplate": false,
+      "id": "webtoapp-tray"
+    },
+    "security": {
+      "headers": {},
+      "csp": null
+    }
+  },
+  "build": {
+    "frontendDist": "../dist"
+  }
+}
