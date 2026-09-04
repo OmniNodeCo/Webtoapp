@@ -160,7 +160,7 @@
     const result = await studio.buildPortable(currentConfig(), destination);
     setBuildButtonsBusy(false);
     if (result.error) { toast(result.error.message, true); return; }
-    if (!result.canceled) toast(`Your app is ready: ${result.result.launchPath}`);
+    if (!result.canceled) toast(`Your app is ready. Build log: ${result.result.logPath}`);
   }
   function applyBuildStatus(status) {
     if (!status || typeof status.message !== "string") return;

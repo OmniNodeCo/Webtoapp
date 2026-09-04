@@ -1,4 +1,4 @@
-import { access, cp, mkdir, rename, rm } from "node:fs/promises";
+import { access, appendFile, cp, mkdir, rename, rm, stat } from "node:fs/promises";
 import { constants } from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
@@ -7,7 +7,10 @@ import { writeGeneratedProject } from "../core/generator.js";
 import type { AppConfig } from "../core/types.js";
 
 const require = createRequire(import.meta.url);
-const { createPackage } = require("@electron/asar") as { createPackage(source: string, destination: string): Promise<void> };
+const { createPackage, extractFile } = require("@electron/asar") as {
+  createPackage(source: string, destination: string): Promise<void>;
+  extractFile(packagePath: string, filename: string): Buffer;
+};
 
 export interface DirectBuildProgress {
   phase: "copying-runtime" | "writing-app" | "finalizing";
@@ -17,6 +20,7 @@ export interface DirectBuildProgress {
 export interface DirectBuildResult {
   appDirectory: string;
   launchPath: string;
+  logPath: string;
 }
 
 /**
@@ -41,24 +45,65 @@ export async function buildDirectPortableApp(
   }
   await ensureMissing(destination);
 
-  onProgress?.({ phase: "copying-runtime", message: "Copying the portable app runtime…" });
-  await cp(sourceRoot, destination, { recursive: true, errorOnExist: true, force: false });
+  const logPath = path.join(destination, "webtoapp-build.log");
+  let logger: ((message: string) => Promise<void>) | undefined;
+  try {
+    onProgress?.({ phase: "copying-runtime", message: "Copying the portable app runtime…" });
+    await cp(sourceRoot, destination, { recursive: true, errorOnExist: true, force: false });
+    logger = createLogger(logPath);
+    await logger("Webtoapp direct build started");
+    await logger(`Studio version: ${app.getVersion()}`);
+    await logger(`Platform: ${process.platform} ${process.arch}`);
+    await logger(`Runtime source: ${sourceRoot}`);
+    await logger(`Output directory: ${destination}`);
+    await logger(`Website: ${config.website ?? "(not supplied)"}`);
 
-  const resources = resourceDirectory(destination);
-  onProgress?.({ phase: "writing-app", message: "Writing your website app…" });
-  const asarPath = path.join(resources, "app.asar");
-  const stagingDirectory = path.join(resources, ".webtoapp-app-staging");
-  await rm(asarPath, { force: true });
-  await rm(path.join(resources, "app.asar.unpacked"), { recursive: true, force: true });
-  await rm(path.join(resources, "app"), { recursive: true, force: true });
-  await mkdir(stagingDirectory, { recursive: true });
-  await writeGeneratedProject(config, stagingDirectory);
-  await createPackage(stagingDirectory, asarPath);
-  await rm(stagingDirectory, { recursive: true, force: true });
+    const resources = resourceDirectory(destination);
+    const asarPath = path.join(resources, "app.asar");
+    const stagingDirectory = path.join(resources, ".webtoapp-app-staging");
+    onProgress?.({ phase: "writing-app", message: "Writing your website app…" });
+    await rm(asarPath, { force: true });
+    await rm(path.join(resources, "app.asar.unpacked"), { recursive: true, force: true });
+    await rm(path.join(resources, "app"), { recursive: true, force: true });
+    await mkdir(stagingDirectory, { recursive: true });
+    await writeGeneratedProject(config, stagingDirectory);
+    await logger("Generated wrapper files written to staging directory");
 
-  onProgress?.({ phase: "finalizing", message: "Finalizing your portable app…" });
-  const launchPath = await renameExecutable(destination, config.appName);
-  return { appDirectory: destination, launchPath };
+    await createPackage(stagingDirectory, asarPath);
+    await validateArchive(asarPath);
+    await rm(stagingDirectory, { recursive: true, force: true });
+    const archiveSize = (await stat(asarPath)).size;
+    await logger(`Validated app.asar (${archiveSize} bytes): package.json, main.cjs, and preload.cjs are present`);
+
+    onProgress?.({ phase: "finalizing", message: "Finalizing your portable app…" });
+    const launchPath = await renameExecutable(destination, config.appName);
+    await logger(`Build completed successfully. Launch: ${launchPath}`);
+    return { appDirectory: destination, launchPath, logPath };
+  } catch (error) {
+    const message = error instanceof Error ? error.stack ?? error.message : String(error);
+    try {
+      await mkdir(destination, { recursive: true });
+      if (!logger) logger = createLogger(logPath);
+      await logger(`BUILD FAILED\n${message}`);
+    } catch {
+      // Preserve the original build error even if the destination is not writable.
+    }
+    throw new Error(`${message}\n\nBuild log: ${logPath}`);
+  }
+}
+
+function createLogger(logPath: string): (message: string) => Promise<void> {
+  return async (message: string): Promise<void> => {
+    await appendFile(logPath, `[${new Date().toISOString()}] ${message}\n`, "utf8");
+  };
+}
+
+async function validateArchive(asarPath: string): Promise<void> {
+  const manifest = JSON.parse(extractFile(asarPath, "package.json").toString("utf8")) as { main?: string };
+  if (manifest.main !== "main.cjs") throw new Error("Archive validation failed: package.json does not point to main.cjs.");
+  extractFile(asarPath, "main.cjs");
+  extractFile(asarPath, "preload.cjs");
+  extractFile(asarPath, "webtoapp.config.json");
 }
 
 function runtimeRoot(): string {
