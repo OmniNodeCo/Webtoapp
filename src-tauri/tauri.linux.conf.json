@@ -1,7 +1,0 @@
-{
-  "bundle": {
-    "active": true,
-    "targets": ["appimage", "deb"],
-    "icon": ["png/icon_512.png"]
-  }
-}

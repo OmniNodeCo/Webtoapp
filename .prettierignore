@@ -1,6 +1,10 @@
-src-tauri/target
 node_modules
-dist/**/*
+lib
+shared/lib
+app/lib
+app/dist
+coverage
+*.map
 *.ico
 *.icns
 *.png
@@ -13,12 +17,5 @@ dist/**/*
 *.dll
 *.so
 *.dylib
-Cargo.lock
-src-tauri/Cargo.lock
 pnpm-lock.yaml
-cli.js
-*.desktop
-*.wxs
-*.plist
-*.toml
-.github/workflows/
+.github/workflows
