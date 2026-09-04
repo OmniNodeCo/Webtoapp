@@ -1,0 +1,8 @@
+{
+    "name": "Webtoapp Preview",
+    "targetUrl": "https://example.com/",
+    "width": 1280,
+    "height": 800,
+    "showMenuBar": false,
+    "webtoappVersion": "0.1.0"
+}
