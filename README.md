@@ -45,9 +45,17 @@ webtoapp --version
 
 See [CLI.md](CLI.md) for command examples and [PUBLISHING.md](PUBLISHING.md) for the maintainer release checklist.
 
-## Portable desktop builds
+## Build directly from Studio — no npm required
 
-Build an app that runs without an installer:
+Download and run a portable Webtoapp Studio release, enter your website URL, then click **Build portable app**. Studio clones its own bundled Electron runtime and replaces the app payload with your website configuration. The result is immediately runnable and does **not** require Node.js, npm, an installer, or any developer tools on your machine.
+
+- Windows: a folder containing `<Your App>.exe` and its required `resources` directory
+- macOS: a portable `.app` bundle
+- Linux: a portable app folder and executable
+
+## Developer portable builds
+
+For source-checkout development, build an app that runs without an installer:
 
 ```bash
 # Creates an unpacked runnable folder for the current OS in release/

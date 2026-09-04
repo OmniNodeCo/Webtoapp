@@ -160,7 +160,7 @@
     const result = await studio.buildPortable(currentConfig(), destination);
     setBuildButtonsBusy(false);
     if (result.error) { toast(result.error.message, true); return; }
-    if (!result.canceled) toast(`Portable app created in ${result.packaged.artifactDirectory}`);
+    if (!result.canceled) toast(`Your app is ready: ${result.result.launchPath}`);
   }
   function applyBuildStatus(status) {
     if (!status || typeof status.message !== "string") return;

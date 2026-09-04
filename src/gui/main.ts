@@ -2,8 +2,9 @@ import { app, BrowserWindow, dialog, ipcMain, shell } from "electron";
 import { writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { assertValidConfig, configFrom, loadConfig, packageGeneratedProject, validateConfig, writeGeneratedProject } from "../core/index.js";
+import { assertValidConfig, configFrom, loadConfig, validateConfig, writeGeneratedProject } from "../core/index.js";
 import type { AppConfig } from "../core/index.js";
+import { buildDirectPortableApp } from "./direct-build.js";
 import { ReleaseUpdater, type UpdateStatus } from "./updater.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -104,9 +105,9 @@ function registerIpc(): void {
   ipcMain.handle("studio:buildPortable", async (_event, raw: Partial<AppConfig>, outputPath?: string) => {
     try {
       if (!outputPath) return { canceled: true };
-      const generated = await writeGeneratedProject(configFrom(raw), outputPath, { force: false });
-      const packaged = await packageGeneratedProject(generated.outputDirectory, { mode: "portable", onProgress: sendBuildStatus });
-      return { canceled: false, generated, packaged };
+      const result = await buildDirectPortableApp(configFrom(raw), outputPath, sendBuildStatus);
+      shell.showItemInFolder(result.launchPath);
+      return { canceled: false, result };
     } catch (error) {
       return { canceled: false, error: serializableError(error) };
     }
