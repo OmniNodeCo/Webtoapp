@@ -12,12 +12,26 @@ permissions:
 
 jobs:
   quality:
-    name: Node ${{ matrix.node }}
-    runs-on: ubuntu-latest
+    name: ${{ matrix.name }} · Node ${{ matrix.node }}
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        node: [20, 22]
+        include:
+          # Keep the Node compatibility promise on Linux while exercising the
+          # current runtime on every desktop OS we publish for.
+          - name: Ubuntu
+            os: ubuntu-latest
+            node: 20
+          - name: Ubuntu
+            os: ubuntu-latest
+            node: 22
+          - name: macOS
+            os: macos-latest
+            node: 22
+          - name: Windows
+            os: windows-latest
+            node: 22
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -32,10 +46,10 @@ jobs:
         run: npm run typecheck
       - name: Test core and CLI
         run: npm test
-      - name: Verify a distributable build
+      - name: Verify distributable build
         run: npm run build
       - name: Upload compiled app
-        if: matrix.node == 22
+        if: matrix.name == 'Ubuntu' && matrix.node == 22
         uses: actions/upload-artifact@v4
         with:
           name: webtoapp-dist

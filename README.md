@@ -118,7 +118,7 @@ npm run build
 npm run package
 ```
 
-The GitHub Actions test workflow checks supported Node versions, typechecks, and runs the unit/integration tests. The release workflow runs only on version tags (`v*`) and publishes desktop artifacts and a GitHub release.
+The GitHub Actions test workflow automatically runs on Ubuntu, macOS, and Windows (with Node 20 and 22 coverage); it typechecks, tests, and compiles the app. `build.yml` is manual-only and exports portable builds for all three operating systems. The release workflow runs only on version tags (`v*`) and publishes desktop artifacts and a GitHub release.
 
 ## Project layout
 

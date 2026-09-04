@@ -1,6 +1,6 @@
-name: Build Windows installer
+name: Build portable apps
 
-# Deliberately manual: test.yml is the only workflow that runs automatically.
+# Deliberately manual: test.yml is the only workflow that runs on branch pushes and pull requests.
 on:
   workflow_dispatch:
     inputs:
@@ -13,9 +13,22 @@ permissions:
   contents: read
 
 jobs:
-  windows-installer:
-    name: Create Windows .exe installer
-    runs-on: windows-latest
+  portable:
+    name: Portable ${{ matrix.name }} build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Windows
+            os: windows-latest
+            command: npm run portable:win
+          - name: macOS
+            os: macos-latest
+            command: npm run portable
+          - name: Linux
+            os: ubuntu-latest
+            command: npm run portable
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -30,12 +43,12 @@ jobs:
         run: npm run typecheck
       - name: Run test suite
         run: npm test
-      - name: Build NSIS executable
-        run: npx electron-builder --win nsis --publish never
-      - name: Upload Windows installer
+      - name: Build portable app
+        run: ${{ matrix.command }}
+      - name: Upload ${{ matrix.name }} portable app
         uses: actions/upload-artifact@v4
         with:
-          name: Webtoapp-Studio-Windows-${{ github.run_number }}
-          path: release/*.exe
+          name: Webtoapp-Studio-Portable-${{ matrix.name }}-${{ github.run_number }}
+          path: release/**
           if-no-files-found: error
           retention-days: 30
