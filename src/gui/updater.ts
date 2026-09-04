@@ -1,5 +1,10 @@
 import { app, shell } from "electron";
-import { autoUpdater, type ProgressInfo, type UpdateInfo } from "electron-updater";
+import electronUpdater from "electron-updater";
+import type { ProgressInfo, UpdateInfo } from "electron-updater";
+
+// electron-updater is CommonJS. Use its default module namespace so the
+// packaged Electron ESM loader does not attempt an unsupported named import.
+const { autoUpdater } = electronUpdater;
 
 export const RELEASES_URL = "https://github.com/OmniNodeCo/Webtoapp/releases/latest";
 
