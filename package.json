@@ -75,12 +75,14 @@
     "directories": {
       "output": "release"
     },
-    "publish": [{
-      "provider": "github",
-      "owner": "OmniNodeCo",
-      "repo": "Webtoapp",
-      "releaseType": "release"
-    }],
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "OmniNodeCo",
+        "repo": "Webtoapp",
+        "releaseType": "release"
+      }
+    ],
     "linux": {
       "target": [
         "AppImage",
@@ -108,6 +110,7 @@
     }
   },
   "dependencies": {
+    "@electron/asar": "^3.2.10",
     "electron-updater": "^6.8.9"
   }
 }

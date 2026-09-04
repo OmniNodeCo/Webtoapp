@@ -47,7 +47,7 @@ See [CLI.md](CLI.md) for command examples and [PUBLISHING.md](PUBLISHING.md) for
 
 ## Build directly from Studio — no npm required
 
-Download and run a portable Webtoapp Studio release, enter your website URL, then click **Build portable app**. Studio clones its own bundled Electron runtime and replaces the app payload with your website configuration. The result is immediately runnable and does **not** require Node.js, npm, an installer, or any developer tools on your machine.
+Download and run a portable Webtoapp Studio release, enter your website URL, then click **Build portable app**. Studio clones its own bundled Electron runtime and writes a validated `app.asar` payload containing your website configuration. The result is immediately runnable and does **not** require Node.js, npm, an installer, or any developer tools on your machine.
 
 - Windows: a folder containing `<Your App>.exe` and its required `resources` directory
 - macOS: a portable `.app` bundle

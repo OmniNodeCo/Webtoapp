@@ -1,9 +1,13 @@
 import { access, cp, mkdir, rename, rm } from "node:fs/promises";
 import { constants } from "node:fs";
+import { createRequire } from "node:module";
 import path from "node:path";
 import { app } from "electron";
 import { writeGeneratedProject } from "../core/generator.js";
 import type { AppConfig } from "../core/types.js";
+
+const require = createRequire(import.meta.url);
+const { createPackage } = require("@electron/asar") as { createPackage(source: string, destination: string): Promise<void> };
 
 export interface DirectBuildProgress {
   phase: "copying-runtime" | "writing-app" | "finalizing";
@@ -42,11 +46,15 @@ export async function buildDirectPortableApp(
 
   const resources = resourceDirectory(destination);
   onProgress?.({ phase: "writing-app", message: "Writing your website app…" });
-  await rm(path.join(resources, "app.asar"), { force: true });
+  const asarPath = path.join(resources, "app.asar");
+  const stagingDirectory = path.join(resources, ".webtoapp-app-staging");
+  await rm(asarPath, { force: true });
   await rm(path.join(resources, "app.asar.unpacked"), { recursive: true, force: true });
-  const appDirectory = path.join(resources, "app");
-  await mkdir(appDirectory, { recursive: true });
-  await writeGeneratedProject(config, appDirectory);
+  await rm(path.join(resources, "app"), { recursive: true, force: true });
+  await mkdir(stagingDirectory, { recursive: true });
+  await writeGeneratedProject(config, stagingDirectory);
+  await createPackage(stagingDirectory, asarPath);
+  await rm(stagingDirectory, { recursive: true, force: true });
 
   onProgress?.({ phase: "finalizing", message: "Finalizing your portable app…" });
   const launchPath = await renameExecutable(destination, config.appName);

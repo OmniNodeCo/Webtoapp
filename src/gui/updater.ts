@@ -1,3 +1,5 @@
+import { existsSync } from "node:fs";
+import path from "node:path";
 import { app, shell } from "electron";
 import electronUpdater from "electron-updater";
 import type { ProgressInfo, UpdateInfo } from "electron-updater";
@@ -24,7 +26,10 @@ export type UpdateNotifier = (status: UpdateStatus) => void;
  */
 export class ReleaseUpdater {
   private started = false;
-  private portable = Boolean(process.env.PORTABLE_EXECUTABLE_DIR);
+  // `win-unpacked` builds do not set PORTABLE_EXECUTABLE_DIR. The updater
+  // metadata check correctly treats those no-installer copies as portable too.
+  private portable = Boolean(process.env.PORTABLE_EXECUTABLE_DIR)
+    || !existsSync(path.join(process.resourcesPath, "app-update.yml"));
 
   constructor(private readonly notify: UpdateNotifier) {}
 
