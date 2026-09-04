@@ -32,7 +32,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json && node scripts/copy-assets.mjs",
+    "build": "npm run clean && tsc -p tsconfig.json && node scripts/copy-assets.mjs",
     "clean": "node -e \"import('node:fs').then(fs => fs.rmSync('dist', { recursive: true, force: true }))\"",
     "dev": "npm run build && electron .",
     "gui": "npm run dev",

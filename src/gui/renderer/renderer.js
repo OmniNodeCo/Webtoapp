@@ -203,6 +203,10 @@
     catch { toast("Could not check for updates.", true); }
   }
   document.addEventListener("DOMContentLoaded", async () => {
+    if (!studio) {
+      document.body.innerHTML = "<main class=\"bridge-error\"><p class=\"eyebrow\">WEBTOAPP STUDIO</p><h1>Desktop bridge unavailable</h1><p>Close this window and install a current Webtoapp Studio build. The secure desktop connection did not load.</p></main>";
+      return;
+    }
     applyConfig(defaults, false);
     $("#project-form").addEventListener("input", (event) => {
       if (event.target.id === "appId") idTouched = true;
