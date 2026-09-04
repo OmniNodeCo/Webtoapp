@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - GitHub Releases update checks for packaged Studio builds, with background download/restart installation on supported installable targets and a latest-release handoff for the portable executable.
 - A manual cross-platform portable-build workflow for Windows, macOS, and Linux; automated tests remain in `test.yml` and run on all three operating systems.
 - Direct no-npm/no-installer desktop app builds from a packaged Webtoapp Studio release.
+- A vendored, adapted Pake/Tauri cloud builder that produces Windows, macOS, and Linux website-app artifacts from a manual GitHub Actions workflow.
 
 ## [0.1.0] - 2026-08-11
 

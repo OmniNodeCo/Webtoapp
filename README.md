@@ -53,6 +53,16 @@ Download and run a portable Webtoapp Studio release, enter your website URL, the
 - macOS: a portable `.app` bundle
 - Linux: a portable app folder and executable
 
+## Pake cloud builder (no local setup)
+
+A vendored, adapted [Pake](https://github.com/tw93/Pake) builder is available through **GitHub → Actions → Build website app (Pake) → Run workflow**. Enter the website URL, application name, and window size; GitHub builds downloadable artifacts for Windows, macOS, and Linux. This is the recommended route when you do not want Node.js, npm, or build tools locally.
+
+- Windows: a direct portable `.exe` (no MSI installer)
+- macOS: an `.app` bundle
+- Linux: an AppImage
+
+Pake is GPL-3.0-or-later with an output exception. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) and `third_party/pake/LICENSE-EXCEPTION` for the retained license terms.
+
 ## Developer portable builds
 
 For source-checkout development, build an app that runs without an installer:

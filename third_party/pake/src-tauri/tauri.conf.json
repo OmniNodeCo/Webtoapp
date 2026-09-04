@@ -1,0 +1,20 @@
+{
+  "productName": "Weekly",
+  "identifier": "com.pake.weekly",
+  "version": "3.15.7",
+  "app": {
+    "withGlobalTauri": true,
+    "trayIcon": {
+      "iconPath": "png/weekly_512.png",
+      "iconAsTemplate": false,
+      "id": "pake-tray"
+    },
+    "security": {
+      "headers": {},
+      "csp": null
+    }
+  },
+  "build": {
+    "frontendDist": "../dist"
+  }
+}
