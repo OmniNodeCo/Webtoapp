@@ -1,71 +1,61 @@
 # Webtoapp
 
-**Turn a trusted website into a lightweight desktop app.** Webtoapp is a rebranded Pake/Tauri-based website wrapper for Windows, macOS, and Linux. It uses each platform's native WebView instead of embedding Chromium, creating substantially smaller desktop applications.
+**Webtoapp is a native desktop GUI for opening trusted websites as focused app windows.** Enter a name and HTTPS URL, then launch it in the operating system’s native WebView—separate from browser tabs and without a local website build process.
 
-> Only package websites you own or are authorized to distribute. Webtoapp does not bypass access controls, subscriptions, or website security.
+> Webtoapp opens sites you own or are authorized to use. It does not download a website’s source, bypass access controls, or remove subscription requirements.
 
-## No local setup: build from GitHub Actions
+## What it does
 
-The simplest way to create an app is the manual **Build website app** workflow:
+- Native GUI for Windows, macOS, and Linux
+- Launches websites in their own resizable desktop windows
+- Remembers recently opened website apps locally
+- HTTPS-first URL validation; local HTTP is allowed only for loopback development
+- Supports multiple independently named website windows
+- Uses the operating system WebView instead of bundling a large Chromium runtime
 
-1. Open the repository’s **Actions** tab.
-2. Choose **Build website app**.
-3. Click **Run workflow**.
-4. Enter your HTTPS website URL, app name, and window dimensions.
-5. Download the artifact for your operating system.
+## Download a GUI executable
 
-No Node.js, npm, Rust, or local compiler is needed on your computer. The workflow builds all available platform artifacts:
+A Webtoapp GUI release is built for all supported platforms. From the repository:
 
-- **Windows:** direct `.exe` app bundle
-- **macOS:** `.app` / DMG output
-- **Linux:** AppImage and Debian package output
+1. Open **Actions** → **Build Webtoapp GUI**.
+2. Click **Run workflow**.
+3. Download the artifact for your operating system after it completes.
 
-## CLI
+No URL form is required in GitHub Actions. The native Webtoapp GUI contains the website-name, URL, and window-size form.
 
-For local developer builds, install dependencies using pnpm and run:
+### Artifacts
 
-```bash
-corepack enable
-pnpm install --frozen-lockfile
-pnpm webtoapp https://portal.example.com --name "Example Portal"
-```
+- **Windows:** NSIS `.exe` installer
+- **macOS:** `.dmg` containing the Webtoapp app
+- **Linux:** `.AppImage` and `.deb`
 
-Or use it through npm after the package is published:
+## Use the GUI
 
-```bash
-npx webtoapp https://portal.example.com --name "Example Portal"
-```
+1. Launch Webtoapp.
+2. Enter an app name—for example, `YouTube`.
+3. Enter the target URL—for example, `https://www.youtube.com`.
+4. Choose the initial window width and height.
+5. Click **Open website app**.
 
-Useful options:
-
-```bash
-webtoapp https://portal.example.com \
-  --name "Example Portal" \
-  --width 1280 --height 820 \
-  --safe-domain auth.example.com,help.example.com \
-  --new-window
-```
-
-Run `webtoapp --help` for all options. Use `--json` when automating the CLI.
+Webtoapp opens the site in a new native app window and saves it in **Quick launch** for later reuse.
 
 ## Development
 
+The executable is built with Tauri/Rust. These tools are only needed by people building Webtoapp itself, not by normal GUI users.
+
 ```bash
 corepack enable
 pnpm install --frozen-lockfile
-pnpm run cli:build
 pnpm test
 pnpm run build
 ```
 
-## Project layout
+## Automation
 
-- `cli/` — Webtoapp command-line builder
-- `src-tauri/` — Tauri/Rust desktop runtime and webview configuration
-- `schema/` — CLI configuration schema
-- `tests/` — CLI and builder tests
-- `.github/workflows/` — automated test, build, and release pipelines
+- `.github/workflows/test.yml` runs the test suite automatically.
+- `.github/workflows/build.yml` manually creates GUI artifacts for Windows, macOS, and Linux.
+- `.github/workflows/release.yml` builds and publishes GitHub Release assets on `v*` tags.
 
-## License and attribution
+## Attribution and license
 
-Webtoapp is a rebranded fork of Pake and is licensed under **GPL-3.0-or-later**. Pake’s output exception is retained in [`LICENSE-EXCEPTION`](LICENSE-EXCEPTION), so standard generated apps can be distributed under terms chosen by the builder. See [`NOTICE.md`](NOTICE.md) and [`TRADEMARK.md`](TRADEMARK.md) for upstream attribution and trademark guidance.
+Webtoapp is a rebranded, modified fork of [Pake](https://github.com/tw93/Pake). It is licensed under **GPL-3.0-or-later**. Pake’s output exception is retained in [`LICENSE-EXCEPTION`](LICENSE-EXCEPTION), and upstream attribution is recorded in [`NOTICE.md`](NOTICE.md) and [`TRADEMARK.md`](TRADEMARK.md).

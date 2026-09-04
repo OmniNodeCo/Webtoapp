@@ -1,4 +1,4 @@
-name: Test Webtoapp
+name: Test Webtoapp GUI
 
 on:
   push:
@@ -30,9 +30,10 @@ jobs:
           cache: pnpm
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-      - name: Compile Webtoapp CLI
-        run: pnpm run cli:build
       - name: Run unit tests
-        run: pnpm run test:unit
-      - name: Verify CLI identity
-        run: node dist/cli.js --version
+        run: pnpm test
+      - name: Verify GUI assets
+        run: |
+          test -f ui/index.html
+          test -f ui/app.js
+          test -f src-tauri/src/lib.rs

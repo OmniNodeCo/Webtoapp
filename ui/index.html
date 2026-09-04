@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark" />
+    <title>Webtoapp</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script defer src="app.js"></script>
+  </head>
+  <body>
+    <main class="shell">
+      <header>
+        <div class="brand"><span class="mark"><i></i><i></i><i></i></span><span>webtoapp<small>NATIVE WEBSITE LAUNCHER</small></span></div>
+        <span class="version">v0.1.0</span>
+      </header>
+      <section class="intro">
+        <p class="eyebrow">DESKTOP WEBSITE APPS</p>
+        <h1>Open any trusted website<br />as its own app.</h1>
+        <p>Give a site its own focused, native window—separate from browser tabs and ready in one click.</p>
+      </section>
+      <section class="builder" aria-labelledby="builder-title">
+        <div class="builder-copy"><p class="eyebrow">NEW WEBSITE APP</p><h2 id="builder-title">Set up a window</h2><p>Webtoapp opens the site in the operating system’s native WebView. Your browser data stays separate.</p><div class="trust"><span>✓</span><div><strong>HTTPS-first</strong><small>Local HTTP is allowed only for localhost development.</small></div></div></div>
+        <form id="app-form" novalidate>
+          <label>App name<input id="name" maxlength="80" value="My Website" autocomplete="off" /></label>
+          <label>Website URL<input id="url" type="url" value="https://example.com" placeholder="https://portal.example.com" autocomplete="url" /></label>
+          <div class="size-row"><label>Width<input id="width" type="number" min="320" max="7680" value="1280" /></label><label>Height<input id="height" type="number" min="320" max="7680" value="820" /></label></div>
+          <button id="launch" type="submit"><span>↗</span> Open website app</button>
+          <p class="feedback" id="feedback" aria-live="polite">Ready when you are.</p>
+        </form>
+      </section>
+      <section class="recent" aria-labelledby="recent-title"><div><p class="eyebrow">RECENT</p><h2 id="recent-title">Quick launch</h2></div><div id="recent-list" class="recent-list"><p class="empty">Your recent website apps will appear here.</p></div></section>
+      <footer>Use only websites you own or are authorized to distribute. <span>•</span> Webtoapp uses the native system WebView.</footer>
+    </main>
+  </body>
+</html>

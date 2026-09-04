@@ -1,15 +1,12 @@
 {
   "name": "webtoapp",
   "version": "0.1.0",
-  "description": "Turn any trusted website into a lightweight desktop app for Windows, macOS, and Linux.",
+  "description": "A native GUI for opening trusted websites in focused desktop app windows.",
   "homepage": "https://github.com/OmniNodeCo/Webtoapp",
   "engines": {
     "node": ">=20.9.0"
   },
   "packageManager": "pnpm@10.26.2",
-  "bin": {
-    "webtoapp": "dist/cli.js"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/OmniNodeCo/Webtoapp.git"
@@ -19,37 +16,21 @@
   },
   "keywords": [
     "webtoapp",
-    "website-to-app",
+    "website-launcher",
     "tauri",
-    "desktop-app",
-    "webview",
-    "windows",
-    "macos",
-    "linux"
-  ],
-  "files": [
-    "LICENSE",
-    "LICENSE-EXCEPTION",
-    "NOTICE.md",
-    "dist/cli.js",
-    "cli",
-    "src-tauri",
-    "schema"
+    "desktop-gui",
+    "webview"
   ],
   "scripts": {
-    "cli:build": "cross-env NODE_ENV=production rollup -c",
-    "cli:watch": "cross-env NODE_ENV=development rollup -c -w",
-    "build": "corepack pnpm run cli:build && corepack pnpm run tauri build",
-    "build:debug": "corepack pnpm run cli:build && corepack pnpm run tauri build --debug",
+    "dev": "corepack pnpm run tauri dev",
+    "build": "corepack pnpm run tauri build",
+    "build:debug": "corepack pnpm run tauri build --debug",
     "tauri": "tauri",
     "test": "corepack pnpm run test:unit",
     "test:unit": "vitest run",
-    "format:check": "prettier --check . --ignore-unknown",
-    "release:check": "corepack pnpm run format:check && corepack pnpm run test",
-    "prepublishOnly": "corepack pnpm run cli:build"
+    "format:check": "prettier --check . --ignore-unknown"
   },
   "type": "module",
-  "exports": "./dist/cli.js",
   "license": "GPL-3.0-or-later",
   "dependencies": {
     "@tauri-apps/api": "~2.10.1",

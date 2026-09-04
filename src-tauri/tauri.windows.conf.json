@@ -1,15 +1,10 @@
 {
   "bundle": {
-    "icon": ["png/icon_256.ico", "png/icon_32.ico"],
     "active": true,
-    "resources": ["png/icon_32.ico"],
-    "targets": ["msi"],
+    "targets": ["nsis"],
+    "icon": ["png/icon_256.ico", "png/icon_32.ico"],
     "windows": {
-      "digestAlgorithm": "sha256",
-      "wix": {
-        "language": ["en-US"],
-        "template": "assets/main.wxs"
-      }
+      "digestAlgorithm": "sha256"
     }
   }
 }

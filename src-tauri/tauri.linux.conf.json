@@ -1,12 +1,7 @@
 {
   "bundle": {
-    "icon": ["png/icon_512.png"],
     "active": true,
-    "linux": {
-      "deb": {
-        "depends": ["curl", "wget"]
-      }
-    },
-    "targets": ["deb", "appimage"]
+    "targets": ["appimage", "deb"],
+    "icon": ["png/icon_512.png"]
   }
 }
