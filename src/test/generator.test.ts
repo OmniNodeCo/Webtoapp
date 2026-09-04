@@ -25,6 +25,10 @@ test("writes a runnable, security-hardened Electron project", async (t) => {
 
   const main = await readFile(path.join(output, "main.cjs"), "utf8");
   const savedConfig = JSON.parse(await readFile(path.join(output, "webtoapp.config.json"), "utf8"));
+  const manifest = JSON.parse(await readFile(path.join(output, "package.json"), "utf8"));
+  assert.equal(manifest.scripts.portable, "electron-builder --dir --publish never");
+  assert.equal(manifest.scripts["portable:win"], "electron-builder --win portable --publish never");
+  assert.deepEqual(manifest.build.win.target, ["portable", "nsis", "zip"]);
   assert.match(main, /contextIsolation: true/);
   assert.match(main, /nodeIntegration: false/);
   assert.match(main, /sandbox: true/);

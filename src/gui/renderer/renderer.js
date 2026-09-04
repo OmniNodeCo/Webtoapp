@@ -128,18 +128,43 @@
     if (result.error) { toast(result.error.message, true); return; }
     if (!result.canceled) { projectPath = result.path; applyConfig(result.config); toast("Configuration opened."); }
   }
+  function setBuildButtonsBusy(busy, message = "Build portable app") {
+    const header = $("#build-button");
+    const portable = $("#portable-button");
+    const project = $("#export-button");
+    header.disabled = busy;
+    portable.disabled = busy;
+    project.disabled = busy;
+    header.textContent = busy ? message : "✦ Build portable app";
+    portable.textContent = busy ? message : "Build portable →";
+  }
+  async function chooseDestination() {
+    const destination = await studio.chooseOutput(currentConfig().appName);
+    return destination.canceled ? undefined : destination.path;
+  }
   async function exportProject() {
     if (!(await validate())) { toast("Fix the configuration before exporting.", true); return; }
-    const destination = await studio.chooseOutput();
-    if (destination.canceled) return;
-    const button = $("#build-button");
-    button.disabled = true;
-    button.textContent = "Exporting…";
-    const result = await studio.build(currentConfig(), destination.path);
-    button.disabled = false;
-    button.innerHTML = "<span>✦</span> Export app";
+    const destination = await chooseDestination();
+    if (!destination) return;
+    setBuildButtonsBusy(true, "Exporting project…");
+    const result = await studio.build(currentConfig(), destination);
+    setBuildButtonsBusy(false);
     if (result.error) { toast(result.error.message, true); return; }
-    if (!result.canceled) toast(`App project exported to ${result.result.outputDirectory}`);
+    if (!result.canceled) toast(`Project exported to ${result.result.outputDirectory}`);
+  }
+  async function buildPortable() {
+    if (!(await validate())) { toast("Fix the configuration before building.", true); return; }
+    const destination = await chooseDestination();
+    if (!destination) return;
+    setBuildButtonsBusy(true, "Preparing build…");
+    const result = await studio.buildPortable(currentConfig(), destination);
+    setBuildButtonsBusy(false);
+    if (result.error) { toast(result.error.message, true); return; }
+    if (!result.canceled) toast(`Portable app created in ${result.packaged.artifactDirectory}`);
+  }
+  function applyBuildStatus(status) {
+    if (!status || typeof status.message !== "string") return;
+    setBuildButtonsBusy(true, status.message);
   }
   let updateState = "idle";
   function applyUpdateStatus(status) {
@@ -191,7 +216,9 @@
     $("#save-button").addEventListener("click", save);
     $("#updates-button").addEventListener("click", handleUpdateAction);
     studio.onUpdateStatus(applyUpdateStatus);
-    $("#build-button").addEventListener("click", exportProject);
+    studio.onBuildStatus(applyBuildStatus);
+    $("#build-button").addEventListener("click", buildPortable);
+    $("#portable-button").addEventListener("click", buildPortable);
     $("#export-button").addEventListener("click", exportProject);
     document.querySelectorAll("[data-external]").forEach((link) => link.addEventListener("click", (event) => { event.preventDefault(); studio.openExternal(link.href); }));
     try { $("#version").textContent = "Version " + await studio.version(); } catch { $("#version").textContent = "Desktop Studio"; }

@@ -3,7 +3,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import process from "node:process";
-import { assertValidConfig, configFrom, deriveAppId, loadConfig, navigationHosts, validateConfig, writeGeneratedProject } from "../core/index.js";
+import { assertValidConfig, configFrom, deriveAppId, loadConfig, navigationHosts, packageGeneratedProject, validateConfig, writeGeneratedProject } from "../core/index.js";
 import type { AppConfig, ValidationIssue } from "../core/index.js";
 
 export interface CliIO {
@@ -26,12 +26,14 @@ Usage:
   webtoapp validate [config]
   webtoapp inspect [config]
   webtoapp build [config] [--output directory] [--force]
+  webtoapp package [config] [--output directory] [--portable|--full] [--force]
   webtoapp doctor [config]
   webtoapp --version
 
 Examples:
   webtoapp init ./acme --name "Acme Portal" --url https://portal.acme.test
-  webtoapp build ./acme/webtoapp.config.json --output ./acme/desktop
+  webtoapp build ./acme/webtoapp.config.json --output ./acme/project
+  webtoapp package ./acme/webtoapp.config.json --output ./acme/portable --portable
 
 Run without a command to launch the visual Studio: npm run gui
 `.trim();
@@ -103,6 +105,8 @@ export async function runCli(argv: string[], io: CliIO = stdoutIO): Promise<numb
         return await inspect(positionals[0], io);
       case "build":
         return await build(positionals[0], options, io);
+      case "package":
+        return await packageApp(positionals[0], options, io);
       case "doctor":
         return await doctor(positionals[0], io);
       default:
@@ -169,6 +173,21 @@ async function build(configArg: string | undefined, options: Record<string, stri
   const result = await writeGeneratedProject(config, output, { force: options.force === true });
   io.log(`✓ Created ${result.files.length} files in ${result.outputDirectory}`);
   io.log(`  cd ${result.outputDirectory} && npm install && npm start`);
+  return 0;
+}
+
+async function packageApp(configArg: string | undefined, options: Record<string, string | boolean>, io: CliIO): Promise<number> {
+  const configFile = configPath(configArg);
+  const config = await loadConfig(configFile);
+  const output = path.resolve(optionString(options, "output") ?? "webtoapp-output");
+  const mode = options.full === true ? "full" : "portable";
+  const generated = await writeGeneratedProject(config, output, { force: options.force === true });
+  io.log(`✓ Generated ${generated.outputDirectory}`);
+  const packaged = await packageGeneratedProject(generated.outputDirectory, {
+    mode,
+    onProgress: ({ message }) => io.log(`… ${message}`),
+  });
+  io.log(`✓ ${mode === "portable" ? "Portable app" : "App packages"} created in ${packaged.artifactDirectory}`);
   return 0;
 }
 

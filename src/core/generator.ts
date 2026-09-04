@@ -66,6 +66,8 @@ function packageJson(config: AppConfig): string {
       start: "electron .",
       dev: "electron .",
       package: "electron-builder --publish never",
+      portable: "electron-builder --dir --publish never",
+      "portable:win": "electron-builder --win portable --publish never",
     },
     devDependencies: {
       electron: "^33.2.1",
@@ -78,7 +80,7 @@ function packageJson(config: AppConfig): string {
       files: ["main.cjs", "preload.cjs", "webtoapp.config.json", "package.json"],
       linux: { target: ["AppImage", "deb"], category: "Network" },
       mac: { target: ["dmg", "zip"], category: "public.app-category.productivity" },
-      win: { target: ["nsis", "zip"] },
+      win: { target: ["portable", "nsis", "zip"] },
       nsis: { oneClick: false, allowToChangeInstallationDirectory: true },
     },
   };
@@ -187,9 +189,16 @@ npm install
 npm start
 \`\`\`
 
-## Build an installer
+## Build a runnable app
 
 \`\`\`bash
+# Portable folder for the current OS — no installer
+npm run portable
+
+# Windows-only: one portable .exe — no installer
+npm run portable:win
+
+# Full platform packages, including installers where supported
 npm run package
 \`\`\`
 

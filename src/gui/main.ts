@@ -1,8 +1,8 @@
 import { app, BrowserWindow, dialog, ipcMain, shell } from "electron";
-import { readFile, writeFile } from "node:fs/promises";
+import { writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { assertValidConfig, configFrom, loadConfig, validateConfig, writeGeneratedProject } from "../core/index.js";
+import { assertValidConfig, configFrom, loadConfig, packageGeneratedProject, validateConfig, writeGeneratedProject } from "../core/index.js";
 import type { AppConfig } from "../core/index.js";
 import { ReleaseUpdater, type UpdateStatus } from "./updater.js";
 
@@ -12,6 +12,14 @@ let releaseUpdater: ReleaseUpdater | undefined;
 
 function sendUpdateStatus(status: UpdateStatus): void {
   mainWindow?.webContents.send("studio:updateStatus", status);
+}
+
+function sendBuildStatus(status: { phase: string; message: string }): void {
+  mainWindow?.webContents.send("studio:buildStatus", status);
+}
+
+function exportFolderName(appName: string): string {
+  return appName.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "webtoapp-app";
 }
 
 function createWindow(): void {
@@ -74,13 +82,15 @@ function registerIpc(): void {
       return { canceled: false, error: serializableError(error) };
     }
   });
-  ipcMain.handle("studio:chooseOutput", async () => {
-    const result = await dialog.showOpenDialog(mainWindow!, {
-      title: "Choose an empty export folder",
-      buttonLabel: "Use this folder",
-      properties: ["openDirectory", "createDirectory"],
+  ipcMain.handle("studio:chooseOutput", async (_event, appName: unknown) => {
+    const folder = exportFolderName(typeof appName === "string" ? appName : "");
+    const result = await dialog.showSaveDialog(mainWindow!, {
+      title: "Choose a new folder for your app",
+      buttonLabel: "Create app here",
+      defaultPath: path.join(app.getPath("documents"), folder),
+      properties: ["createDirectory", "showOverwriteConfirmation"],
     });
-    return result.canceled ? { canceled: true } : { canceled: false, path: result.filePaths[0] };
+    return result.canceled || !result.filePath ? { canceled: true } : { canceled: false, path: result.filePath };
   });
   ipcMain.handle("studio:build", async (_event, raw: Partial<AppConfig>, outputPath?: string) => {
     try {
@@ -91,7 +101,16 @@ function registerIpc(): void {
       return { canceled: false, error: serializableError(error) };
     }
   });
-  ipcMain.handle("studio:readConfigText", async (_event, filePath: string) => readFile(filePath, "utf8"));
+  ipcMain.handle("studio:buildPortable", async (_event, raw: Partial<AppConfig>, outputPath?: string) => {
+    try {
+      if (!outputPath) return { canceled: true };
+      const generated = await writeGeneratedProject(configFrom(raw), outputPath, { force: false });
+      const packaged = await packageGeneratedProject(generated.outputDirectory, { mode: "portable", onProgress: sendBuildStatus });
+      return { canceled: false, generated, packaged };
+    } catch (error) {
+      return { canceled: false, error: serializableError(error) };
+    }
+  });
 }
 
 app.whenReady().then(() => {

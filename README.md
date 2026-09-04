@@ -17,7 +17,9 @@ npm run gui
 # or use the CLI
 npm run cli -- init ./my-app --url https://example.com --name "Example"
 npm run cli -- validate ./my-app/webtoapp.config.json
-npm run cli -- build ./my-app/webtoapp.config.json --output ./my-app/desktop
+npm run cli -- build ./my-app/webtoapp.config.json --output ./my-app/project
+# generate and package a runnable no-installer app for your current OS
+npm run cli -- package ./my-app/webtoapp.config.json --output ./my-app/portable --portable
 ```
 
 The generated `desktop/` folder is a self-contained Electron project. Install its dependencies and run it:
@@ -79,6 +81,7 @@ webtoapp init [directory] [--name NAME] [--url URL] [--id APP_ID]
 webtoapp validate [config]
 webtoapp inspect [config]
 webtoapp build [config] [--output directory] [--force]
+webtoapp package [config] [--output directory] [--portable|--full] [--force]
 webtoapp doctor [config]
 ```
 

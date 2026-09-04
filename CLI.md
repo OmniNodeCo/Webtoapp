@@ -57,17 +57,30 @@ webtoapp doctor ./acme-portal/webtoapp.config.json
 ### Generate a desktop app project
 
 ```bash
-webtoapp build ./acme-portal/webtoapp.config.json --output ./acme-portal/desktop
-cd ./acme-portal/desktop
+webtoapp build ./acme-portal/webtoapp.config.json --output ./acme-portal/project
+cd ./acme-portal/project
 npm install
 npm start
-npm run package
 ```
 
-`build` refuses to overwrite a non-empty directory. Use `--force` only when you deliberately want to replace a generated output:
+### Build a runnable app
+
+`package` turns the configuration into a generated project, installs its Electron tooling, and creates app artifacts in `release/`.
 
 ```bash
-webtoapp build webtoapp.config.json --output ./desktop --force
+# No-installer portable app for the current OS.
+webtoapp package ./acme-portal/webtoapp.config.json --output ./acme-portal/portable --portable
+
+# Full platform package output, including installers where supported.
+webtoapp package ./acme-portal/webtoapp.config.json --output ./acme-portal/release --full
+```
+
+The packaging command needs Node.js, npm, and network access to download Electron. On Windows, portable mode makes a standalone `.exe`; macOS and Linux portable mode make an unpacked runnable app folder.
+
+`build` and `package` refuse to overwrite a non-empty directory. Use `--force` only when you deliberately want to replace a generated output:
+
+```bash
+webtoapp package webtoapp.config.json --output ./portable --force
 ```
 
 ## Generated app security

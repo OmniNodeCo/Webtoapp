@@ -38,7 +38,7 @@
             <button class="button button-quiet" id="open-button" type="button">Open config</button>
             <button class="button button-quiet" id="save-button" type="button">Save config</button>
             <button class="button button-quiet" id="updates-button" type="button">Check updates</button>
-            <button class="button button-primary" id="build-button" type="button"><span>✦</span> Export app</button>
+            <button class="button button-primary" id="build-button" type="button"><span>✦</span> Build portable app</button>
           </div>
         </header>
 
@@ -46,7 +46,7 @@
           <div>
             <p class="eyebrow">DESKTOP APP BUILDER</p>
             <h1>Make your website feel<br />right at home.</h1>
-            <p class="subhead">Configure a focused, secure desktop wrapper. Export an Electron project you can run, inspect, and package on your own terms.</p>
+            <p class="subhead">Configure a focused, secure desktop wrapper. Build a runnable no-installer app, or export a project for complete control.</p>
           </div>
           <div class="build-readiness" id="readiness" aria-live="polite">
             <div class="readiness-ring"><span>100</span><small>%</small></div>
@@ -91,8 +91,11 @@
             </section>
 
             <section class="panel export-panel" id="export">
-              <div><p class="eyebrow">04 / HANDOFF</p><h2>Export your project</h2><p>Webtoapp writes a standalone Electron project with secure defaults, ready for <code>npm install</code> and packaging.</p></div>
-              <button class="button button-primary button-large" id="export-button" type="button">Export app project <span>→</span></button>
+              <div><p class="eyebrow">04 / BUILD</p><h2>Turn this website into an app</h2><p><strong>Build portable</strong> creates a runnable app with no installer. <strong>Export project</strong> gives you the generated source for customization.</p></div>
+              <div class="export-actions">
+                <button class="button button-outline button-large" id="export-button" type="button">Export project</button>
+                <button class="button button-primary button-large" id="portable-button" type="button">Build portable <span>→</span></button>
+              </div>
             </section>
           </form>
 
