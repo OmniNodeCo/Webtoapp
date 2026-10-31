@@ -80,12 +80,19 @@ jobs:
             npx --yes "electron-builder@${ELECTRON_BUILDER_VERSION}" "$@"
           }
 
+          app_id_suffix="$(printf '%s' "$APP_NAME" \
+            | tr '[:upper:]' '[:lower:]' \
+            | tr -cs '[:alnum:]' '-' \
+            | sed 's/^-*//; s/-*$//')"
+          app_id_suffix="${app_id_suffix:-app}"
+          app_id="com.omninodeco.webtoapp.${app_id_suffix}"
+
           builder_args=(
             --projectDir "$GITHUB_WORKSPACE"
             --publish never
             --config.directories.output="$GITHUB_WORKSPACE/artifacts/installers"
             --config.productName="$APP_NAME"
-            --config.appId=com.omninodeco.webtoapp
+            --config.appId="$app_id"
           )
 
           case "$RUNNER_OS" in
