@@ -11,6 +11,7 @@ app/dist/
 
 # Test/build output
 coverage/
+artifacts/
 out/
 *.tgz
 *.app
