@@ -17,11 +17,14 @@ on:
 permissions:
   contents: read
 
+env:
+  ELECTRON_BUILDER_VERSION: 26.18.0
+
 jobs:
   build:
-    name: Build ${{ matrix.os }} application
+    name: Build ${{ matrix.os }} installers
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 60
+    timeout-minutes: 90
     strategy:
       fail-fast: false
       matrix:
@@ -52,18 +55,65 @@ jobs:
       - name: Compile Webtoapp
         run: pnpm build
 
-      - name: Build native application
+      - name: Build unpacked Electron application
         shell: bash
         env:
           TARGET_URL: ${{ inputs.target_url }}
           APP_NAME: ${{ inputs.app_name }}
         run: |
-          node lib/cli.js "$TARGET_URL" "artifacts/apps" --name "$APP_NAME" --overwrite
+          set -euo pipefail
+          node lib/cli.js "$TARGET_URL" "artifacts/apps" \
+            --name "$APP_NAME" \
+            --arch x64 \
+            --overwrite
 
-      - name: Upload native application
+      - name: Build distributable installers
+        shell: bash
+        env:
+          APP_NAME: ${{ inputs.app_name }}
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/installers
+
+          run_builder() {
+            npx --yes "electron-builder@${ELECTRON_BUILDER_VERSION}" "$@"
+          }
+
+          builder_args=(
+            --projectDir "$GITHUB_WORKSPACE"
+            --publish never
+            --config.directories.output="$GITHUB_WORKSPACE/artifacts/installers"
+            --config.productName="$APP_NAME"
+            --config.appId=com.omninodeco.webtoapp
+          )
+
+          case "$RUNNER_OS" in
+            macOS)
+              packaged_app="$(find artifacts/apps -type d -name '*.app' -print -quit)"
+              test -n "$packaged_app"
+              run_builder --mac dmg --x64 --prepackaged "$packaged_app" "${builder_args[@]}"
+              ;;
+            Windows)
+              packaged_app="$(find artifacts/apps -mindepth 1 -maxdepth 1 -type d -print -quit)"
+              test -n "$packaged_app"
+              run_builder --win nsis --x64 --prepackaged "$packaged_app" "${builder_args[@]}"
+              ;;
+            Linux)
+              packaged_app="$(find artifacts/apps -mindepth 1 -maxdepth 1 -type d -print -quit)"
+              test -n "$packaged_app"
+              run_builder --linux AppImage deb --x64 --prepackaged "$packaged_app" "${builder_args[@]}"
+              ;;
+            *)
+              echo "Unsupported runner: $RUNNER_OS" >&2
+              exit 1
+              ;;
+          esac
+
+      - name: Upload distributable installers
         uses: actions/upload-artifact@v4
         with:
-          name: Webtoapp-${{ matrix.os }}-${{ github.run_number }}
-          path: artifacts/apps
+          name: Webtoapp-installers-${{ matrix.os }}-${{ github.run_number }}
+          path: artifacts/installers
           if-no-files-found: error
           retention-days: 30
