@@ -1,0 +1,21 @@
+[
+  {
+    "key": "Command+=",
+    "inputEvents": [
+      {
+        "type": "keyDown",
+        "keyCode": ""
+      }
+    ]
+    },
+
+  {
+    "key": "Command+-",
+    "inputEvents": [
+      {
+        "type": "keyDown",
+        "keyCode": ""
+      }
+    ]
+  }
+]

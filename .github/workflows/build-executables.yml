@@ -1,0 +1,132 @@
+name: Build native Webtoapp applications
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_url:
+        description: Website URL to package as a desktop application
+        required: true
+        default: https://example.com/
+        type: string
+      app_name:
+        description: Name shown by the generated application
+        required: true
+        default: Webtoapp App
+        type: string
+
+permissions:
+  contents: read
+
+env:
+  ELECTRON_BUILDER_VERSION: 26.18.0
+
+jobs:
+  build:
+    name: Build ${{ matrix.os }} installers
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.26.2
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.14.0
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Compile Webtoapp
+        run: pnpm build
+
+      - name: Build unpacked Electron application
+        shell: bash
+        env:
+          TARGET_URL: ${{ inputs.target_url }}
+          APP_NAME: ${{ inputs.app_name }}
+        run: |
+          set -euo pipefail
+          node lib/cli.js "$TARGET_URL" "artifacts/apps" \
+            --name "$APP_NAME" \
+            --arch x64 \
+            --overwrite
+
+      - name: Build distributable installers
+        shell: bash
+        env:
+          APP_NAME: ${{ inputs.app_name }}
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/installers
+
+          run_builder() {
+            npx --yes "electron-builder@${ELECTRON_BUILDER_VERSION}" "$@"
+          }
+
+          app_id_suffix="$(printf '%s' "$APP_NAME" \
+            | tr '[:upper:]' '[:lower:]' \
+            | tr -cs '[:alnum:]' '-' \
+            | sed 's/^-*//; s/-*$//')"
+          app_id_suffix="${app_id_suffix:-app}"
+          app_id="com.omninodeco.webtoapp.${app_id_suffix}"
+
+          builder_args=(
+            --projectDir "$GITHUB_WORKSPACE"
+            --publish never
+            --config.directories.output="$GITHUB_WORKSPACE/artifacts/installers"
+            --config.productName="$APP_NAME"
+            --config.appId="$app_id"
+            '--config.artifactName=${productName}-${version}-${arch}.${ext}'
+            '--config.linux.maintainer=OmniNodeCo <opensource@omninodeco.com>'
+            --config.linux.packageName="$app_id_suffix"
+            --config.linux.desktopName="$APP_NAME"
+            --config.linux.syncDesktopName=true
+            --config.linux.category=Utility
+          )
+
+          case "$RUNNER_OS" in
+            macOS)
+              packaged_app="$(find artifacts/apps -type d -name '*.app' -print -quit)"
+              test -n "$packaged_app"
+              run_builder --mac dmg --x64 --prepackaged "$packaged_app" "${builder_args[@]}"
+              ;;
+            Windows)
+              packaged_app="$(find artifacts/apps -mindepth 1 -maxdepth 1 -type d -print -quit)"
+              test -n "$packaged_app"
+              run_builder --win nsis --x64 --prepackaged "$packaged_app" "${builder_args[@]}"
+              ;;
+            Linux)
+              packaged_app="$(find artifacts/apps -mindepth 1 -maxdepth 1 -type d -print -quit)"
+              test -n "$packaged_app"
+              run_builder --linux AppImage deb --x64 --prepackaged "$packaged_app" "${builder_args[@]}"
+              ;;
+            *)
+              echo "Unsupported runner: $RUNNER_OS" >&2
+              exit 1
+              ;;
+          esac
+
+      - name: Upload distributable installers
+        uses: actions/upload-artifact@v4
+        with:
+          name: Webtoapp-installers-${{ matrix.os }}-${{ github.run_number }}
+          path: artifacts/installers
+          if-no-files-found: error
+          retention-days: 30

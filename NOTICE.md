@@ -1,7 +1,9 @@
 # Webtoapp notices
 
-Webtoapp is a rebranded fork of [Pake](https://github.com/tw93/Pake), based on upstream commit `777dd55` (2026-09-04).
+Webtoapp is a modified and rebranded fork of [majick/nativefier](https://github.com/majick/nativefier), based on upstream commit `43ba3749a3b9d5436ddb333d7c8eb9875bb837f3`.
 
-Copyright for upstream source remains with Tw93 and the Pake contributors. This fork is distributed under GPL-3.0-or-later; see `LICENSE`. Pake's output exception is preserved in `LICENSE-EXCEPTION`: applications created through the standard Webtoapp/Pake build process may be distributed under terms chosen by their builder.
+Nativefier was originally created by Goh Jia Hao and released under the MIT License. The maintained Nativefier fork released changes after its 2025-02-27 hard fork into the public domain where legally possible. Webtoapp preserves those permissions and the original MIT notice; see [LICENSE](LICENSE).
 
-Webtoapp is not affiliated with or endorsed by Pake or Tw93. Pake trademark guidance is retained in `TRADEMARK.md`.
+Webtoapp changes the product name, package/runtime identifiers, documentation, and CLI command; adds URL validation, safer Electron defaults, bounded metadata fetching, deterministic app-data naming, and build/test fixes. Webtoapp is maintained by OmniNodeCo and is not affiliated with or endorsed by Nativefier, Goh Jia Hao, or majick.
+
+The optional icon catalog fallback uses the upstream Nativefier icon catalog when a site does not provide an explicit icon. A user-provided `--icon` always takes precedence.

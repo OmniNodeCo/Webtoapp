@@ -1,3 +1,2 @@
-strict-peer-dependencies=false
-node-linker=hoisted
-auto-install-peers=true
+lockfile=true
+prefer-frozen-lockfile=true
