@@ -93,6 +93,12 @@ jobs:
             --config.directories.output="$GITHUB_WORKSPACE/artifacts/installers"
             --config.productName="$APP_NAME"
             --config.appId="$app_id"
+            '--config.artifactName=${productName}-${version}-${arch}.${ext}'
+            '--config.linux.maintainer=OmniNodeCo <opensource@omninodeco.com>'
+            --config.linux.packageName="$app_id_suffix"
+            --config.linux.desktopName="$APP_NAME"
+            --config.linux.syncDesktopName=true
+            --config.linux.category=Utility
           )
 
           case "$RUNNER_OS" in
