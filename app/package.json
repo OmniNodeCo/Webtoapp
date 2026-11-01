@@ -3,7 +3,10 @@
   "version": "0.1.0",
   "description": "Electron runtime bundled into apps created by Webtoapp",
   "main": "lib/main.js",
-  "author": "OmniNodeCo",
+  "author": {
+    "name": "OmniNodeCo",
+    "email": "opensource@omninodeco.com"
+  },
   "license": "MIT",
   "keywords": [
     "desktop",

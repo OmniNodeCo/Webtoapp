@@ -4,7 +4,8 @@
   "description": "Wrap any trusted website in a focused desktop app.",
   "license": "MIT",
   "author": {
-    "name": "OmniNodeCo"
+    "name": "OmniNodeCo",
+    "email": "opensource@omninodeco.com"
   },
   "homepage": "https://github.com/OmniNodeCo/Webtoapp",
   "repository": {
